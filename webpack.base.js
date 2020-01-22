@@ -1,5 +1,6 @@
 const path = require('path');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 const paths = {
 	src: path.join(process.cwd(), 'src'),
@@ -27,7 +28,10 @@ module.exports = {
 			},
 			{
 				test: /\.css$/,
-				use: ['style-loader', 'css-loader'],
+				use: [
+					MiniCssExtractPlugin.loader,
+					'css-loader'
+				],
 			},
 		]
 	},
@@ -41,6 +45,9 @@ module.exports = {
 			tslint: false,
 			useTypescriptIncrementalApi: true,
 			checkSyntacticErrors: true,
+		}),
+		new MiniCssExtractPlugin({
+			filename: '[name].[contenthash].css',
 		}),
 	],
 };
