@@ -14,7 +14,6 @@ const devConfig = merge(baseConfig, {
 		path: `${baseConfig.externals.paths.build}`,
 		filename: '[name].js',
 		chunkFilename: '[name].chunk.js',
-		publicPath: '/',
 	},
 	devtool: 'cheap-module-eval-source-map',
 	optimization: {},
