@@ -16,7 +16,6 @@ const prodConfig = merge(baseConfig, {
 		path: `${baseConfig.externals.paths.build}`,
 		filename: '[name].[chunkhash].js',
 		chunkFilename: '[name].[chunkhash].chunk.js',
-		publicPath: '/',
 	},
 	optimization: {
 		minimize: true,
