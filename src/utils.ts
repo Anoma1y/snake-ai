@@ -35,3 +35,7 @@ export function getAffordableFoodCells(GRID: TMatrix, SNAKE: TMatrix) {
 
 	return AFFORDABLE_FOOD_CELLS;
 }
+
+export function mergeOptions<T extends object>(master: T, slaves: T): T {
+	return Object.assign(master, slaves);
+}
