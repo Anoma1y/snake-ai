@@ -1,37 +1,34 @@
-import { TMatrix } from "./types";
+import {TMatrix} from "./types";
 
-export function renderGrid(width: number, height: number): TMatrix {
-	const GRID: TMatrix = [];
-
-	for (let i = 0; i < height; i++) {
-		for (let j = 0; j < width; j++) {
-			GRID.push([i, j]);
-		}
-	}
-
-	return GRID;
+export function mergeOptions<T extends object>(master: T, slaves: T): T {
+  return Object.assign(master, slaves);
 }
 
-export function getAffordableFoodCells(GRID: TMatrix, SNAKE: TMatrix) {
-	const AFFORDABLE_FOOD_CELLS: TMatrix = [];
+export function getRandomFloat(min: number = 0, max: number = 100): number {
+  return Math.floor(Math.random() * (max - min) + min) / 100
+}
 
-	for (let g = 0; g < GRID.length; g++) {
-		const grid: number[] = GRID[g];
-		let flag = true;
+export function isAtOnePoint(leftArr: number[], rightArr: number[]): boolean {
+  return leftArr[0] === rightArr[0] && leftArr[1] === rightArr[1];
+}
 
-		for (let s = 0; s < SNAKE.length; s++) {
-			const snake = SNAKE[s];
+export function getAvailablePoint<T = number[] | TMatrix>(snake: T, hasSlice: boolean = true): TMatrix {
+  const snakeX: T = hasSlice ? snake[0] : snake;
 
-			if (snake[0] === grid[0] && snake[1] === grid[1]) {
-				flag = false;
-				break;
-			}
-		}
+  return [
+    [snakeX[0] - 1, snakeX[1]], // by left
+    [snakeX[0] + 1, snakeX[1]], // by right
+    [snakeX[0], snakeX[1] - 1], // by top
+    [snakeX[0], snakeX[1] + 1] // by bottom
+  ];
+}
 
-		if (flag) {
-			AFFORDABLE_FOOD_CELLS.push(grid);
-		}
-	}
+export function checkPenetratesItSelf(position: TMatrix): boolean {
+  for (let s = 1; s < position.length; s++) {
+    if (position[0][0] === position[s][0] && position[0][1] === position[s][1]) {
+      return true;
+    }
+  }
 
-	return AFFORDABLE_FOOD_CELLS;
+  return false;
 }
