@@ -162,6 +162,7 @@ class Main {
       return this.ggwp();
     }
 
+    // @ts-ignore
     this.snake.appendToHead(this.getSafePathToFood(this.snake.snake, this.food.foodPosition).position);
 
     const snakeHead = this.snake.getHead();
