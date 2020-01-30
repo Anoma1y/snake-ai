@@ -1,31 +1,37 @@
 import {TMatrix} from "./types";
 
 class Food {
-	foodPosition: number[] = [];
-	availablePosition: TMatrix = [[]];
+  foodPosition: number[] = [];
+  availablePosition: TMatrix = [[]];
 
-	constructor(private grid: TMatrix, private snake: TMatrix) {
-		this.initialPosition();
-	}
+  constructor(private grid: TMatrix, private snake: TMatrix) {
+    this.recalculateAvailablePosition();
+  }
 
-	private initialPosition() {
-		for (let g of this.grid) {
-			let flag = true;
+  recalculateAvailablePosition(): void {
+    this.availablePosition = [];
 
-			for (let s of this.snake) {
-				if (s[0] === g[0] && s[1] === g[1]) {
-					flag = false;
-					break;
-				}
-			}
+    for (let g = 0; g < this.grid.length; g++) {
+      let isAvailablePosition = true;
 
-			if (flag) {
-				this.availablePosition.push(g);
-			}
-		}
+      for (let s = 0; s < this.snake.length; s++) {
+        if (this.snake[s][0] === this.grid[g][0] && this.snake[s][1] === this.grid[g][1]) {
+          isAvailablePosition = false; // snake in this position
+          break;
+        }
+      }
 
-		this.foodPosition = this.availablePosition[Math.floor(Math.random() * this.availablePosition.length)];
-	}
+      if (isAvailablePosition) {
+        this.availablePosition.push(this.grid[g]);
+      }
+    }
+
+    this.foodPosition = this.availablePosition[this.getRandomPositionIndex()];
+  }
+
+  getRandomPositionIndex(): number {
+    return Math.floor(Math.random() * this.availablePosition.length);
+  }
 }
 
 export default Food;
