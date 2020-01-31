@@ -1,4 +1,4 @@
-export type TContext = null | CanvasRenderingContext2D;
+export type TContext<T = null | CanvasRenderingContext2D> = T;
 
 export type TMatrix<T = number> = T[][];
 

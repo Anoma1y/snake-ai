@@ -22,9 +22,8 @@ class Food {
         }
       }
 
-      if (isAvailablePosition) {
+      if (isAvailablePosition)
         this.availablePosition.push(this.grid[g]);
-      }
     }
 
     this._food = this.availablePosition[getRandomInt(this.availablePosition.length)];

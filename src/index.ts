@@ -1,18 +1,18 @@
 import './style.css';
-import {TMatrix, TSafePathToFood, TDimesions, TRenderOptions} from './types';
-import {getAvailablePoint, isAtOnePoint, checkPenetratesItSelf} from './utils';
+import {TMatrix, TSafePathToFood} from './types';
+import {getAvailablePoint, isAtOnePoint, checkPenetratesItSelf, getRandomInt} from './utils';
+import Fast from 'fast.js';
 import Render from './Render';
 import Snake from './Snake';
 import Food from './Food';
 import Colors from "./Colors";
 import Timeout = NodeJS.Timeout;
-import {GRID_CELL_COLOR} from "./constants";
+import {FOOD_COLOR, GRID_CELL_COLOR, DOCUMENT_TITLE} from "./constants";
 
 class Main {
   public render: Render;
   private snake: Snake;
   private food: Food;
-  private colors: Colors;
 
   private readonly timer: Timeout | undefined;
 
@@ -21,16 +21,20 @@ class Main {
 
     this.render = new Render(canvas);
     this.snake = new Snake(this.render.getDimensions());
-    this.food = new Food(this.render.grid, this.snake.snake);
-    this.colors = new Colors();
+    this.food = new Food(this.render.getGrid(), this.snake.getSnake());
 
-    this.timer = setInterval(() => this.gameUpdate(), 100);
+    document.title = `${DOCUMENT_TITLE} [Start]`;
+
+    this.timer = setInterval(() => this.gameUpdate(), 10);
   }
 
   private checkBoundary(pos: number[]): boolean {
     const {width, height} = this.render.getDimensions();
 
-    return pos[0] >= 0 && pos[0] < height && pos[1] >= 0 && pos[1] < width;
+    return (pos[0] >= 0)
+      && (pos[0] < height)
+      && (pos[1] >= 0)
+      && (pos[1] < width);
   }
 
   private createBoard(snake: TMatrix, isTrimEnd: boolean = false): TMatrix<number | null> {
@@ -47,9 +51,7 @@ class Main {
 
     const snakeRest: TMatrix = snake.slice(1, isTrimEnd ? snake.length - 1 : undefined);
 
-    for (let s = 0; s < snakeRest.length; s++) {
-      board[snakeRest[s][0]][snakeRest[s][1]] = -1;
-    }
+    Fast.forEach(snakeRest, (s: number[]) => board[s[0]][s[1]] = -1);
 
     return board;
   }
@@ -58,24 +60,17 @@ class Main {
     const move: TMatrix = [];
     const AVAILABLE_SAFE_MOVE: TMatrix = getAvailablePoint(snake);
 
-    for (let b = 0; b < AVAILABLE_SAFE_MOVE.length; b++) {
-      let tmp_snake: TMatrix = [];
+    Fast.forEach(AVAILABLE_SAFE_MOVE, (safeMove: number[]) => {
+      let tmp_snake: TMatrix = [...snake];
 
-      for (let s = 0; s < snake.length; s++) {
-        tmp_snake = [];
-
-        for (let s1 = 0; s1 < snake.length; s1++) {
-          tmp_snake.push(snake[s1])
-        }
-      }
-
-      tmp_snake.unshift(AVAILABLE_SAFE_MOVE[b]);
+      tmp_snake.unshift(safeMove);
       tmp_snake.pop();
 
-      if (this.checkBoundary(AVAILABLE_SAFE_MOVE[b]) && !checkPenetratesItSelf(tmp_snake)) {
-        move.push(AVAILABLE_SAFE_MOVE[b]);
+      if (this.checkBoundary(safeMove) && !checkPenetratesItSelf(tmp_snake)) {
+        move.push(safeMove);
       }
-    }
+
+    });
 
     return move;
   }
@@ -83,35 +78,36 @@ class Main {
   private distanceToFood(snake: TMatrix, food: number[]): number {
     const snakeHead = snake[0];
 
-    if (isAtOnePoint(snakeHead, food)) return 0;
+    if (isAtOnePoint(snakeHead, food))
+      return 0;
 
     let board: TMatrix<number | null> = this.createBoard(snake);
 
-    const step = [[snakeHead]];
+    const nextPath = [[snakeHead]];
 
     board[snakeHead[0]][snakeHead[1]] = 0;
 
     while (true) {
-      if (step[step.length - 1].length === 0) return Infinity;
+      if (nextPath[nextPath.length - 1].length === 0)
+        return Infinity;
 
-      step.push([]);
+      nextPath.push([]);
 
-      const st = step[step.length - 2];
+      const st = nextPath[nextPath.length - 2];
 
       for (let s = 0; s < st.length; s++) {
-        const stepEl = st[s];
-        const slaves = getAvailablePoint(stepEl, false);
+        const nextPathEl = st[s];
+        const availableSteps = getAvailablePoint(nextPathEl, false);
 
-        for (let g = 0; g < slaves.length; g++) {
-          const slaveEl = slaves[g];
+        for (let g = 0; g < availableSteps.length; g++) {
+          const availableStep = availableSteps[g];
 
-          if (this.checkBoundary(slaveEl) && board[slaveEl[0]][slaveEl[1]] === null) {
-            step[step.length - 1].push(slaveEl);
-            board[slaveEl[0]][slaveEl[1]] = (board[stepEl[0]][stepEl[1]] as number) + 1;
+          if (this.checkBoundary(availableStep) && board[availableStep[0]][availableStep[1]] === null) {
+            nextPath[nextPath.length - 1].push(availableStep);
+            board[availableStep[0]][availableStep[1]] = (board[nextPathEl[0]][nextPathEl[1]] as number) + 1;
 
-            if (slaveEl[0] === food[0] && slaveEl[1] === food[1]) {
-              return (board[slaveEl[0]][slaveEl[1]] as number);
-            }
+            if (availableStep[0] === food[0] && availableStep[1] === food[1])
+              return (board[availableStep[0]][availableStep[1]] as number);
           }
         }
       }
@@ -121,17 +117,36 @@ class Main {
   private getShortDistinationPath(snake: TMatrix, food: number[], positions: TMatrix): number[] {
     const destinations: number[] = [];
 
-    for (let p = 0; p < positions.length; p++) {
+    Fast.forEach(positions, (pos: number[]) => {
       const snake_clone: TMatrix = [...snake];
 
-      snake_clone.unshift(positions[p]);
+      snake_clone.unshift(pos);
 
-      if (!(p[0] === food[0] && p[1] === food[1])) {
+      if (!(pos[0] === food[0] && pos[1] === food[1])) {
         snake_clone.pop();
       }
 
       destinations.push(this.distanceToFood(snake_clone, food));
-    }
+    });
+
+    return destinations;
+  }
+
+  private getAlternativeShortDistinationPath(snake: TMatrix, positions: TMatrix, food?: number[]): number[] {
+    const destinations: number[] = [];
+
+    Fast.forEach(positions, (pos: number[]) => {
+      const snake_clone: TMatrix = [...snake];
+
+      snake_clone.unshift(pos);
+
+      if (!food || !(pos[0] === food[0] && pos[1] === food[1])) {
+        snake_clone.pop();
+      }
+
+      destinations.push(this.distanceAlternativeToFood(snake_clone));
+    });
+
     return destinations;
   }
 
@@ -157,47 +172,141 @@ class Main {
     }
   }
 
-  private gameUpdate() {
-    if (!this.food.foodPosition || this.food.foodPosition.length === 0 || this.getSafeMove(this.snake.snake).length === 0) {
-      return this.ggwp();
+  private distanceAlternativeToFood(snake: TMatrix): number {
+    if (snake.length === 1)
+      return 0;
+
+    const board = this.createBoard(snake, true);
+
+    const snakeHead = snake[0];
+    const snakeTail = snake[snake.length - 1];
+    const nextPath = [[snakeHead]];
+
+    board[snakeHead[0]][snakeHead[1]] = 0;
+
+    while (true) {
+      if (nextPath[nextPath.length - 1].length === 0)
+        return Infinity;
+
+      nextPath.push([]);
+
+      const availableSteps = nextPath[nextPath.length - 2];
+
+      for (let s = 0; s < availableSteps.length; s++) {
+        const points = getAvailablePoint(availableSteps[s], false);
+
+        for (let e = 0; e < points.length; e++) {
+          if (this.checkBoundary(points[e]) && board[points[e][0]][points[e][1]] === null) {
+            board[points[e][0]][points[e][1]] = (board[availableSteps[s][0]][availableSteps[s][1]] as number) + 1;
+            nextPath[nextPath.length - 1].push(points[e]);
+
+            if (points[e][0] === snakeTail[0] && points[e][1] === snakeTail[1])
+              return (board[points[e][0]][points[e][1]] as number);
+          }
+        }
+      }
+    }
+  }
+
+  private getAlternativeSafePathToFood(snake: TMatrix, food?: number[]) {
+    const savePositions = this.getSafeMove(snake);
+    const dist = this.getAlternativeShortDistinationPath(snake, savePositions, food);
+
+    let nextPositionIndex;
+    let dist_temp = -Infinity;
+
+    for (let i = 0; i < dist.length; i++) {
+      if (isFinite(dist[i]) && (dist[i] > dist_temp)) {
+        dist_temp = dist[i];
+        nextPositionIndex = i;
+      }
     }
 
-    // @ts-ignore
-    this.snake.appendToHead(this.getSafePathToFood(this.snake.snake, this.food.foodPosition).position);
+    const availability = nextPositionIndex !== undefined;
+
+    return {
+      availability,
+      position: availability
+        ? savePositions[nextPositionIndex] // next safe position
+        : savePositions[getRandomInt(savePositions.length)] // next random position
+    }
+  }
+
+  private checkSafePosition(snake: TMatrix, food: number[]): boolean {
+    const {area} = this.render.getDimensions();
+    const snake_clone = [...snake];
+
+    while (true) {
+      const {availability, position} = this.getSafePathToFood(snake_clone, food);
+
+      if (!availability)
+        return false;
+
+      snake_clone.unshift(position as number[]);
+
+      if (snake_clone[0][0] === food[0] && snake_clone[0][1] === food[1]) {
+        return (snake_clone.length === area)
+          ? true // nowhere to go
+          : this.getAlternativeSafePathToFood(snake_clone).availability
+      }
+
+      snake_clone.pop();
+    }
+  }
+
+  private getNextPosition(snake: TMatrix, food: number[]): number[] {
+    const nextPosition = this.getSafePathToFood(snake, food);
+    const isSavePosition = this.checkSafePosition(snake, food);
+
+    return (nextPosition.availability && isSavePosition)
+      ? (nextPosition.position as number[])
+      : this.getAlternativeSafePathToFood(snake, food).position;
+  }
+
+  private gameUpdate() {
+    if (!this.food.getFood() || this.food.getFood().length === 0 || this.getSafeMove(this.snake.getSnake()).length === 0)
+      return this.ggwp();
+
+    this.snake.appendToHead(this.getNextPosition(this.snake.getSnake(), this.food.getFood()));
 
     const snakeHead = this.snake.getHead();
 
-    if (!this.checkBoundary(snakeHead)) return this.ggwp();
+    if (!this.checkBoundary(snakeHead))
+      return this.ggwp();
 
-    if (isAtOnePoint(snakeHead, this.food.foodPosition)) {
+    if (isAtOnePoint(snakeHead, this.food.getFood())) {
       this.food.recalculateAvailablePosition();
     } else {
       const snakeTail = this.snake.removeTail();
 
-      if (checkPenetratesItSelf(this.snake.snake)) {
+      if (checkPenetratesItSelf(this.snake.getSnake()))
         return this.ggwp();
-      }
 
-      if (Array.isArray(snakeTail)) {
+      if (Array.isArray(snakeTail))
         this.render.drawCell(snakeTail[0], snakeTail[1], GRID_CELL_COLOR);
-      }
     }
 
-    for (let i = 0; i < this.snake.snake.length; i++) {
-      this.render.drawCell(this.snake.snake[i][0], this.snake.snake[i][1], 'red');
-    }
+    const snakeColors = Colors.interpolationColors(
+      "rgb(255, 171, 41)",
+      "rgb(39, 169, 255)",
+      this.snake.getLength()
+    );
 
-    if (this.food.foodPosition) {
-      this.render.drawCell(this.food.foodPosition[0], this.food.foodPosition[1], "green");
-    }
+    if (this.food.getFood())
+      this.render.drawCell(this.food.getFood()[0], this.food.getFood()[1], FOOD_COLOR);
+
+    Fast.forEach(this.snake.getSnake(), (pos: number[], i) => {
+      this.render.drawCell(pos[0], pos[1], snakeColors[i]);
+    });
   }
 
   private ggwp() {
     console.log('[GGWP] Good Game, Well Played!');
 
-    if (this.timer) {
+    document.title = `${DOCUMENT_TITLE} [End]`;
+
+    if (this.timer)
       clearInterval(this!.timer);
-    }
   }
 }
 

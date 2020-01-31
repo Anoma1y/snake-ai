@@ -64,7 +64,7 @@ class Render {
   }
 
   private drawGrid() {
-    for (let g = 0; g < this._grid.length; g++) {
+    for (let g = 0; g < this.getGrid().length; g++) {
       this.drawCell(g[0], g[1], this._options.gridColor)
     }
   }
@@ -72,14 +72,10 @@ class Render {
   public drawCell(i: number, j: number, color: string): void {
     const {gridSize, gridMargin} = this._options;
 
-    if (!this.ctx) {
-      throw new Error('Context is null');
-    }
-
-    this!.ctx.fillStyle = color;
-    this!.ctx.fillRect(
-      j * gridSize + gridMargin,
-      i * gridSize + gridMargin,
+    (this.ctx as TContext<CanvasRenderingContext2D>).fillStyle = color;
+    (this.ctx as TContext<CanvasRenderingContext2D>).fillRect(
+      gridSize * j + gridMargin,
+      gridSize * i + gridMargin,
       gridSize - 2 * gridMargin,
       gridSize - 2 * gridMargin
     );

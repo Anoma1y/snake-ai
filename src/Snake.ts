@@ -13,6 +13,10 @@ class Snake {
     return this._snake;
   }
 
+  public getLength(): number {
+    return this._snake.length;
+  }
+
   appendToHead(position: number[]): void {
     this._snake.unshift(position);
   }
