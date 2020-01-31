@@ -8,8 +8,16 @@ export function getRandomFloat(min: number = 0, max: number = 100): number {
   return Math.floor(Math.random() * (max - min) + min) / 100
 }
 
+export function getRandomInt(num: number): number {
+  return Math.floor(Math.random() * num);
+}
+
 export function isAtOnePoint(leftArr: number[], rightArr: number[]): boolean {
   return leftArr[0] === rightArr[0] && leftArr[1] === rightArr[1];
+}
+
+export function calcArea(x: number, y: number): number {
+  return x * y;
 }
 
 export function getAvailablePoint<T = number[] | TMatrix>(snake: T, hasSlice: boolean = true): TMatrix {
