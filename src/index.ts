@@ -10,11 +10,11 @@ import Timeout = NodeJS.Timeout;
 import {FOOD_COLOR, GRID_CELL_COLOR, DOCUMENT_TITLE} from "./constants";
 
 class Main {
-  public render: Render;
+  private render: Render;
   private snake: Snake;
   private food: Food;
 
-  private readonly timer: Timeout | undefined;
+  private timer: Timeout | undefined;
 
   constructor() {
     const canvas = document.getElementById("snake") as HTMLCanvasElement;
@@ -24,8 +24,6 @@ class Main {
     this.food = new Food(this.render.getGrid(), this.snake.getSnake());
 
     document.title = `${DOCUMENT_TITLE} [Start]`;
-
-    this.timer = setInterval(() => this.gameUpdate(), 10);
   }
 
   private checkBoundary(pos: number[]): boolean {
@@ -308,6 +306,14 @@ class Main {
     if (this.timer)
       clearInterval(this!.timer);
   }
+
+  public run(interval: number = 10): void {
+    this.timer = setInterval(() => {
+      this.gameUpdate();
+    }, interval);
+  }
 }
 
-new Main();
+new Main().run(24);
+
+

@@ -22,10 +22,18 @@ class Render {
   constructor(private readonly canvasEl, private readonly opt?) {
     this._options = mergeOptions(this._options, opt);
 
+    if (!this.canvasEl) {
+      throw new Error('Canvas element not found')
+    }
+
     canvasEl.width = this._options.width;
     canvasEl.height = this._options.height;
 
     this.ctx = canvasEl.getContext('2d') as CanvasRenderingContext2D;
+
+    if (!this.ctx) {
+      throw new Error('Canvas context not found')
+    }
 
     this.width = Math.floor(canvasEl.width / this._options.gridSize);
     this.height = Math.floor(canvasEl.height / this._options.gridSize);
@@ -64,8 +72,10 @@ class Render {
   }
 
   private drawGrid() {
-    for (let g = 0; g < this.getGrid().length; g++) {
-      this.drawCell(g[0], g[1], this._options.gridColor)
+    const grid = this.getGrid();
+
+    for (let g = 0; g < grid.length; g++) {
+      this.drawCell(grid[g][0], grid[g][1], this._options.gridColor)
     }
   }
 
