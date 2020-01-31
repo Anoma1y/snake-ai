@@ -1,3 +1,5 @@
+export type TContext = null | CanvasRenderingContext2D;
+
 export type TMatrix<T = number> = T[][];
 
 export type TSafePathToFood = {
@@ -17,6 +19,8 @@ export type TDimesions = {
   width: number
   height: number
   area: number
+  grid_size: number
+  grid_margin: number
 }
 
 export type TRGBArray = [number, number, number]
@@ -26,3 +30,4 @@ export type TRGBObject = {
   green: number
   blue: number
 }
+

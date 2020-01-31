@@ -1,15 +1,17 @@
-import {TDimesions, TMatrix, TRenderOptions, TRGBArray, TRGBObject} from "./types";
-import {mergeOptions} from "./utils";
+import {TContext, TDimesions, TMatrix, TRenderOptions} from "./types";
+import {calcArea, mergeOptions} from "./utils";
 import {CANVAS_HEIGHT, CANVAS_WIDTH, GRID_MARGIN, GRID_SIZE, GRID_CELL_COLOR} from "./constants";
 
 class Render {
-  private readonly ctx: null | CanvasRenderingContext2D = null;
+  private readonly ctx: TContext = null;
 
-  public grid: TMatrix = [[]];
+  public _grid: TMatrix = [[]];
   public width: number = 0;
   public height: number = 0;
 
-  private readonly options: TRenderOptions = {
+  private readonly _dimensions: TDimesions;
+
+  private readonly _options: TRenderOptions = {
     width: CANVAS_WIDTH,
     height: CANVAS_HEIGHT,
     gridSize: GRID_SIZE,
@@ -17,32 +19,36 @@ class Render {
     gridColor: GRID_CELL_COLOR,
   };
 
-  constructor(canvasEl, opt?) {
-    this.options = mergeOptions(this.options, opt);
+  constructor(private readonly canvasEl, private readonly opt?) {
+    this._options = mergeOptions(this._options, opt);
 
-    canvasEl.width = this.options.width;
-    canvasEl.height = this.options.height;
+    canvasEl.width = this._options.width;
+    canvasEl.height = this._options.height;
 
     this.ctx = canvasEl.getContext('2d') as CanvasRenderingContext2D;
 
-    this.width = Math.floor(canvasEl.width / this.options.gridSize);
-    this.height = Math.floor(canvasEl.height / this.options.gridSize);
+    this.width = Math.floor(canvasEl.width / this._options.gridSize);
+    this.height = Math.floor(canvasEl.height / this._options.gridSize);
 
-    this.grid = this.renderGrid();
+    this._grid = this.renderGrid();
 
-    this.grid.forEach(g => this.drawCell(g[0], g[1], this.options.gridColor));
-  }
+    this.drawGrid();
 
-  getDimensions(): TDimesions {
-    return {
+    this._dimensions = {
       width: this.width,
       height: this.height,
-      area: this.getArea()
+      area: calcArea(this.width, this.height),
+      grid_margin: GRID_MARGIN,
+      grid_size: GRID_SIZE,
     }
   }
 
-  private getArea(): number {
-    return this.width * this.height;
+  getDimensions(): TDimesions {
+    return this._dimensions;
+  }
+
+  getGrid(): TMatrix {
+    return this._grid;
   }
 
   private renderGrid(): TMatrix {
@@ -57,8 +63,14 @@ class Render {
     return GRID;
   }
 
+  private drawGrid() {
+    for (let g = 0; g < this._grid.length; g++) {
+      this.drawCell(g[0], g[1], this._options.gridColor)
+    }
+  }
+
   public drawCell(i: number, j: number, color: string): void {
-    const {gridSize, gridMargin} = this.options;
+    const {gridSize, gridMargin} = this._options;
 
     if (!this.ctx) {
       throw new Error('Context is null');

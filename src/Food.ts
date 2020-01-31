@@ -1,14 +1,15 @@
 import {TMatrix} from "./types";
+import {getRandomInt} from "./utils";
 
 class Food {
-  foodPosition: number[] = [];
+  _food: number[] = [];
   availablePosition: TMatrix = [[]];
 
   constructor(private grid: TMatrix, private snake: TMatrix) {
     this.recalculateAvailablePosition();
   }
 
-  recalculateAvailablePosition(): void {
+  public recalculateAvailablePosition(): void {
     this.availablePosition = [];
 
     for (let g = 0; g < this.grid.length; g++) {
@@ -26,11 +27,11 @@ class Food {
       }
     }
 
-    this.foodPosition = this.availablePosition[this.getRandomPositionIndex()];
+    this._food = this.availablePosition[getRandomInt(this.availablePosition.length)];
   }
 
-  getRandomPositionIndex(): number {
-    return Math.floor(Math.random() * this.availablePosition.length);
+  public getFood(): number[] {
+    return this._food;
   }
 }
 
