@@ -314,6 +314,6 @@ class Main {
   }
 }
 
-new Main().run();
+new Main().run(24);
 
 

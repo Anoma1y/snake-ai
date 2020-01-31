@@ -72,8 +72,10 @@ class Render {
   }
 
   private drawGrid() {
-    for (let g = 0; g < this.getGrid().length; g++) {
-      this.drawCell(g[0], g[1], this._options.gridColor)
+    const grid = this.getGrid();
+
+    for (let g = 0; g < grid.length; g++) {
+      this.drawCell(grid[g][0], grid[g][1], this._options.gridColor)
     }
   }
 
