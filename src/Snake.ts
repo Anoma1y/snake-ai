@@ -1,4 +1,5 @@
 import {TDimesions, TMatrix} from "./types";
+import {getRandomInt} from "./utils";
 
 class Snake {
   private readonly _snake: TMatrix;
@@ -6,7 +7,7 @@ class Snake {
   constructor(private gridDimensions: TDimesions) {
     const {width, height} = gridDimensions;
 
-    this._snake = [[Math.floor(Math.random() * width), Math.floor(Math.random() * height)]];
+    this._snake = [[getRandomInt(width), getRandomInt(height)]];
   }
 
   public getSnake(): TMatrix {
