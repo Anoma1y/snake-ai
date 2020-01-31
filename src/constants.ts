@@ -1,4 +1,4 @@
-export const GRID_SIZE = 10;
+export const GRID_SIZE = 20;
 export const GRID_MARGIN = 0;
 export const GRID_CELL_COLOR = '#000000';
 export const CANVAS_WIDTH = 400;

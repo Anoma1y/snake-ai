@@ -1,4 +1,5 @@
 import {TMatrix} from "./types";
+import Fast from 'fast.js';
 import {getRandomInt} from "./utils";
 
 class Food {
@@ -12,19 +13,19 @@ class Food {
   public recalculateAvailablePosition(): void {
     this.availablePosition = [];
 
-    for (let g = 0; g < this.grid.length; g++) {
+    Fast.forEach(this.grid, (grid: number[]) => {
       let isAvailablePosition = true;
 
-      for (let s = 0; s < this.snake.length; s++) {
-        if (this.snake[s][0] === this.grid[g][0] && this.snake[s][1] === this.grid[g][1]) {
+      Fast.forEach(this.snake, (snake: number[]) => {
+        if (snake[0] === grid[0] && snake[1] === grid[1]) {
           isAvailablePosition = false; // snake in this position
-          break;
+          return;
         }
-      }
+      });
 
       if (isAvailablePosition)
-        this.availablePosition.push(this.grid[g]);
-    }
+        this.availablePosition.push(grid);
+    });
 
     this._food = this.availablePosition[getRandomInt(this.availablePosition.length)];
   }
